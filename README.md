@@ -27,6 +27,8 @@ Search function is defined to find the final solution to a given sudoku puzzle.
 
 ## Program:
 ```python3
+    Developed by: Prasannakumar M
+    Register No:212220230035
 %matplotlib inline
 import matplotlib.pyplot as plt
 import random
