@@ -1,4 +1,6 @@
-### Sudoku 
+## EX NO:06
+## DATE:7.6.22
+## <p align="center">Sudoku Solver
 ## Aim:
 To develop a code to solve a given sudoku puzzle.
 
@@ -24,8 +26,6 @@ We reduce the puzzle using the two strategies.
 Search function is defined to find the final solution to a given sudoku puzzle.
 
 ## Program:
-## Developed By : Prasannakumar M
-## Register Number : 212220230035
 ```python3
 %matplotlib inline
 import matplotlib.pyplot as plt
