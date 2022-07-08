@@ -27,122 +27,126 @@ Search function is defined to find the final solution to a given sudoku puzzle.
 
 ## Program:
 ```python3
-    Developed by: Prasannakumar M
-    Register No:212220230035
-%matplotlib inline
-import matplotlib.pyplot as plt
-import random
-import math
-import sys
-import time
-rows = 'ABCDEFGHI'
-cols = '123456789'
+def cross(x,y):
+    return[s+b for s in x for b in y]
+    
+rows="ABCDEFGHI"
+columns="123456789"
+boxes=cross(rows,columns)
 
-def cross(a,b):
-    return [i+j for i in a for j in b]
-boxes=cross(rows,cols)
-ru=[cross(r,cols) for r in rows]
-cu=[cross(rows,c) for c in cols]
-su=[cross(rs,cs) for rs in ('ABC','DEF','GHI') for cs in('123','456','789')]
-ul=ru+cu+su
-units = dict((s, [u for u in ul if s in u])  for s in boxes)
-peers = dict((s, set(sum(units[s],[]))-set([s]))for s in boxes)
+def input_dict():
+    sudoku=dict().fromkeys(boxes,'123456789')
+    no_of_predefined_values=int(input("Enter the number of index with predefined values: "))
+    for i in range(1,no_of_predefined_values+1):
+        index_=str(input("Enter the index: ")).capitalize()
+        if index_[0] in rows and index_[1] in columns and len(index_)==2:
+            pass
+        else:
+            print("Invalid Index!")
+            break
+        value_=(input("Enter the value: "))
+        if value_.isnumeric() and len(str(value_))==1:
+            str(value_)
+        else:
+            print("Invalid input!")
+            break
+        sudoku[index_]=value_
+    return sudoku
 def grid_values(grid):
-    assert len(grid) == 81, "Input grid must be a string length of 81 (9x9)"
-    boxes = cross(rows,cols)
-    return dict(zip(boxes,grid))
-def display(values):
-    width = 1+max(len(values[s]) for s in boxes)
-    line = '+'.join(['-'*(width*3)]*3)
-    for r in rows:
-        print(''.join(values[r+c].center (width)+('|' if c in '36' else '') for c in cols))
-        if r in 'CF': print(line)
-    return
-def grid_values_improved(grid):
     values = []
     all_digits = '123456789'
     for c in grid:
         if c == '.':
             values.append(all_digits)
         elif c in all_digits:
-                values.append(c)
+            values.append(c)
     assert len(values) == 81
-    boxes = cross(rows,cols)
-    return dict(zip(boxes,values))    
-def elimination(values):
-    solved_values = [box for box in values.keys() if len(values[box])==1]
+    boxes = cross(rows, columns)
+    return dict(zip(boxes, values))
+
+Choice=int(input("1)Index: Values\n 2)String format\n3) Default Puzzle"))
+if Choice==1:
+    sudoku=input_dict()
+elif Choice==2:
+    String=input("Enter the String:")
+    sudoku=grid_values(String)
+elif Choice==3:
+    sudoku=grid_values("...5....6...87.3.227.3...81....349..793.5.614..879....92...3.575.6.87...3....5...")
+else:
+    print("Invalid Input!!")
+    
+row_units=[cross(r,columns) for r in rows]
+column_units=[cross(rows,c) for c in columns]
+square_units=[cross(rs,cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+unitlist =row_units+column_units+square_units
+units=dict((s,[u for u in unitlist if s in u])for s in boxes)
+peers=dict((s, set(sum(units[s],[])) - set([s]))for s in boxes)
+
+def display(sudoku_dict):
+    width=1+max(len(sudoku_dict[s]) for s in boxes)
+    line='+'.join(['-'*(width*3)]*3)
+    for r in rows:
+        print(''.join(sudoku_dict[r+c].center(width)+("|" if c in '36' else '')for c in columns))
+        if r in 'CF': print(line)
+    return
+    
+def eliminate(values):
+    solved_values=[box for box in values.keys() if len(values[box]) == 1]
     for box in solved_values:
-        digit = values[box]
+        digit=values[box]
         for peer in peers[box]:
-            values[peer] = values[peer].replace(digit,'')
-    return values
-def only_choice(values):
-    for unit in ul:
-        for digit in '123456789':
-            dplaces = [box for box in unit if digit in values[box]]
-            if len(dplaces) == 1:
-                values[dplaces[0]] = digit
-    return values    
-def reduce_puzzle(values):
-    stalled =False
-    while not stalled:
-        solved_values_before = len([box for box in values.keys() if len(values[box])==1])
-        elimination(values)
-        only_choice(values)
-        solved_values_after = len([box for box in values.keys() if len(values[box])==1])
-        stalled = solved_values_after == solved_values_before
-        if len([box for box in values.keys() if len(values[box])==1])==0:
-            return False
-    return values    
-def search(values):
-    values_reduced = reduce_puzzle(values)
-    if not values_reduced:
-        return False
-    else:
-        values=values_reduced
-    if len([box for box in values.keys() if len(values[box])==1])==81:
-        return values   
-    possibility_count_list = [(len(values[box]),box) for box in values.keys() if len(values[box])>1]    
-    possibility_count_list.sort()
-    for(_,t_box_min) in possibility_count_list:
-        for i_digit in values[t_box_min]:
-            new_values = values.copy()
-            new_values[t_box_min]=i_digit
-            new_values = search(new_values)
-            if new_values:
-                return new_values           
-    return values
-def search(values):
-    values_reduced = reduce_puzzle(values)
-    if not values_reduced:
-        return False
-    else:
-        values=values_reduced
-    if len([box for box in values.keys() if len(values[box])==1])==81:
-        return values  
-    possibility_count_list = [(len(values[box]),box) for box in values.keys() if len(values[box])>1]
-    possibility_count_list.sort()
-    for(_,t_box_min) in possibility_count_list:
-        for i_digit in values[t_box_min]:
-            new_values = values.copy()
-            new_values[t_box_min]=i_digit
-            new_values = search(new_values)
-            if new_values:
-                return new_values
-            
+            values[peer]=values[peer].replace(digit, '')
+    return values           
+
+def onlychoice(values):
+    for unit in unitlist:
+        for digit in columns:
+            dplace=[box for box in unit if digit in values[box]]
+            if len(dplace)==1:
+                values[dplace[0]]=digit
     return values
     
-    p='.38...24.6..9.2..1..4..8..64712..35............5....1..83...67...6..1529..2....8.'
-start_time = time.time()
-display(grid_values(p))
-p1=grid_values_improved(p)
-print("\n\n")
-display(p1)
-result = search(p1)
-print("\n\n")
-display(result)
-time_taken=time.time() - start_time
-print("\n\n{0} seconds".format(time_taken))
+                                                                                                                                                       
+def reduce_puzzle(values):
+    stalled=False
+    while not stalled:
+        solved_values_before= len([box for box in values.keys() if len(values[box])==1])
+        eliminate(values)
+        onlychoice(values)
+        solved_values_after=len([box for box in values.keys() if len(values[box])==1])
+        stalled=solved_values_before==solved_values_after
+        if len([box for box in values.keys() if len(values[box])==0]):
+            return False
+    return values
+
+def search(values):
+    values_reduced=reduce_puzzle(values)
+    if not values_reduced:
+        return False
+    else:
+        values=values_reduced
+    if len([b1 for b1 in boxes if len(values[b1])==1 ])==81:
+        return values
+    possibility_count_list= [(len(values[b1]),b1) for b1 in boxes if len(values[b1])>1]
+    possibility_count_list.sort()
+    for (_,t_box_min) in possibility_count_list:
+        for i_digit in values[t_box_min]:
+            new_values=values.copy()
+            new_values[t_box_min]=i_digit
+            new_values=search(new_values)
+            if new_values:
+                return new_values
+    return False
+    
+print("\n\tSudoku before Solving\n")
+display(sudoku)
+result=search(sudoku)
+if result:
+    print("\n\nSudoku after Solving\n")
+    display(result)
+else:
+    print("Failed!!")    
+
 ```
 ## Output:
 ![11](https://user-images.githubusercontent.com/75235090/172778326-4a1ae796-c268-4874-8cd2-622c424fa6f0.jpg)
